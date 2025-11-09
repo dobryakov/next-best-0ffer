@@ -119,3 +119,21 @@ services:
     networks:
       - nbo-net
 
+  perf:
+    image: locustio/locust:2.31.5
+    command: >
+      locust
+      --host ${PERF_TARGET_HOST:-http://api:9090}
+      --locustfile /mnt/locust/locustfile.py
+    volumes:
+      - ./tests/performance:/mnt/locust
+    env_file:
+      - .env
+    depends_on:
+      api:
+        condition: service_started
+    networks:
+      - nbo-net
+    profiles:
+      - perf
+

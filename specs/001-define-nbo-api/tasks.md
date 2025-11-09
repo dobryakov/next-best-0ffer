@@ -100,12 +100,12 @@
 
 **Purpose**: Завершить документацию, наблюдаемость и процессы.
 
-- [ ] T041 [P] Актуализировать quickstart и README с новыми командами в `specs/001-define-nbo-api/quickstart.md` и `README.md`
-- [ ] T042 [P] Добавить нагрузочные профили Locust и сценарии прогрева данных в `tests/performance/locustfile.py`
-- [ ] T043 [P] Пересмотреть `.env.example`, добавить описания переменных в `docs/configuration/env.md`
-- [ ] T044 Настроить CI-пайплайн с прогоном pytest, контрактных и нагрузочных smoke-тестов в `.github/workflows/ci.yml`
-- [ ] T045 [P] Описать дашборды мониторинга и алерты в `docs/monitoring/nbo-dashboard.md`
-- [ ] T046 Актуализировать shell-клиент (cli) и js-клиент (sdk-js) в `clients`
+- [X] T041 [P] Актуализировать quickstart и README с новыми командами в `specs/001-define-nbo-api/quickstart.md` и `README.md`
+- [X] T042 [P] Добавить нагрузочные профили Locust и сценарии прогрева данных в `tests/performance/locustfile.py`
+- [X] T043 [P] Пересмотреть `.env.example`, добавить описания переменных в `docs/configuration/env.md`
+- [X] T044 Настроить CI-пайплайн с прогоном pytest, контрактных и нагрузочных smoke-тестов в `.github/workflows/ci.yml`
+- [X] T045 [P] Описать дашборды мониторинга и алерты в `docs/monitoring/nbo-dashboard.md`
+- [X] T046 Актуализировать shell-клиент (cli), php-клиент, и js-клиент (sdk-js) в `clients`
 
 ---
 

@@ -8,26 +8,24 @@
 
 ## 2. Переменные окружения (.env)
 
-Создайте файл `.env` в корне и заполните:
+Скопируйте пример и при необходимости адаптируйте значения:
 
-```env
-POSTGRES_DSN=postgresql://nbo:nbo@postgres:5432/nbo
-REDIS_URL=redis://redis:6379/0
-FEAST_REPO_PATH=/opt/feast_repo
-MODEL_REGISTRY_PATH=/opt/models
-ALS_FACTORS=64
-ALS_REG=0.1
-LGBM_MODEL_PATH=/opt/models/lgbm.bin
-LOG_LEVEL=INFO
-API_PORT=9090
-NBO_RETRY_WINDOW_SECONDS=30
-EVENT_IDEMPOTENCY_WINDOW_SECONDS=600
-AB_VARIANTS=control,treatmentA
+```bash
+cp .env.example .env
 ```
 
-При изменении/добавлении переменных обновляйте README и документацию.
+Расшифровки и рекомендации по настройке см. в `docs/configuration/env.md`.
+При добавлении новых переменных синхронизируйте `.env.example`, README и документацию.
 
 ## 3. Запуск сервисов
+
+Перед запуском пересоберите образы после изменения зависимостей:
+
+```bash
+docker compose build api workers ml-pipeline
+```
+
+Запустите основные сервисы:
 
 ```bash
 docker compose up --build api workers ml-pipeline
@@ -89,8 +87,9 @@ docker compose run --rm workers pytest
 # контракты OpenAPI
 docker compose run --rm api pytest -m contract
 
-# нагрузочные
-docker compose run --rm perf locust -f load/locustfile.py --headless -u 100 -r 10
+# нагрузочные (прогрев включает сценарии из tests/performance/locustfile.py)
+docker compose --profile perf run --rm perf \
+  --headless --users 25 --spawn-rate 5 --run-time 5m
 ```
 
 ## 7. ML-пайплайн
@@ -101,12 +100,21 @@ docker compose run --rm perf locust -f load/locustfile.py --headless -u 100 -r 1
 
 ## 8. Наблюдаемость
 
-- Логи доступны через `docker compose logs -f api` и `workers`
-- Метрики Prometheus на `http://localhost:9090`
-- Трассировки отправляются в Jaeger (`http://localhost:16686`)
+- Логи доступны через `docker compose logs -f api workers`
+- Метрики Prometheus на `http://localhost:${METRICS_PORT:-9091}/metrics`
+- Трассировки отправляются в Jaeger (`TRACING_ENDPOINT`, см. `.env`)
 
 ## 9. A/B тестирование
 
 - Перед запросом рекомендаций передавайте `variant` (`control`, `treatmentA`)
 - Результаты эксперимента сохраняются в таблице `experiments_results` и доступны через BI.
+
+## 10. Клиенты и примеры
+
+- Shell-скрипты: `clients/cli/*.sh`
+- Пример PHP SDK: `clients/php`
+- JS SDK: `clients/sdk-js`
+
+Перед использованием убедитесь, что сервисы из раздела 3 запущены,
+а переменные окружения настроены согласно `docs/configuration/env.md`.
 

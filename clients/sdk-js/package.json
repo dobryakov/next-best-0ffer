@@ -1,0 +1,13 @@
+{
+  "name": "nbo-sdk-js",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Минимальный JS SDK для Next Best Offer API",
+  "scripts": {
+    "example": "node examples.mjs"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+
