@@ -105,6 +105,7 @@
 - [ ] T043 [P] Пересмотреть `.env.example`, добавить описания переменных в `docs/configuration/env.md`
 - [ ] T044 Настроить CI-пайплайн с прогоном pytest, контрактных и нагрузочных smoke-тестов в `.github/workflows/ci.yml`
 - [ ] T045 [P] Описать дашборды мониторинга и алерты в `docs/monitoring/nbo-dashboard.md`
+- [ ] T046 Актуализировать shell-клиент (cli) и js-клиент (sdk-js) в `clients`
 
 ---
 
