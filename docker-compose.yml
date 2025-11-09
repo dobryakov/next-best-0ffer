@@ -1,0 +1,121 @@
+version: "3.9"
+
+networks:
+  nbo-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  feast-data:
+  model-registry:
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: nbo
+      POSTGRES_PASSWORD: nbo
+      POSTGRES_DB: nbo
+    command: >
+      postgres -c max_connections=200
+               -c shared_buffers=256MB
+               -c wal_level=logical
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - nbo-net
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - nbo-net
+
+  feast:
+    image: feastdev/feature-server:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      FEAST_REPO_PATH: ${FEAST_REPO_PATH:-/opt/feast_repo}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ./services/ml/registry:/opt/feast_repo
+    networks:
+      - nbo-net
+
+  api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    command: uvicorn services.api.app.main:app --host 0.0.0.0 --port ${API_PORT:-9090}
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      feast:
+        condition: service_started
+    ports:
+      - "${API_PORT:-9090}:9090"
+    volumes:
+      - ./services/api:/app
+    networks:
+      - nbo-net
+
+  workers:
+    build:
+      context: ./services/workers
+      dockerfile: Dockerfile
+    command: celery -A services.workers.tasks.celery_app worker --loglevel=${LOG_LEVEL:-INFO}
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./services/workers:/app
+    networks:
+      - nbo-net
+
+  ml-pipeline:
+    build:
+      context: ./services/ml
+      dockerfile: Dockerfile
+    command: python -m pipelines.run --mode=dev
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      feast:
+        condition: service_started
+    volumes:
+      - ./services/ml:/app
+      - model-registry:${MODEL_REGISTRY_PATH:-/opt/models}
+    networks:
+      - nbo-net
+

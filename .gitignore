@@ -1,1 +1,33 @@
 .env
+.env.*
+.envrc
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+
+# Node.js artifacts
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# IDE and tooling
+.idea/
+.vscode/
+
+# Docker
+docker-compose.override.yml
+docker-data/

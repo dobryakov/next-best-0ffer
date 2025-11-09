@@ -7,10 +7,10 @@
 
 **Purpose**: Подготовить каркас репозитория и контейнеров для сервисов API, воркеров и ML пайплайнов.
 
-- [ ] T001 Создать каталоги и базовые `__init__.py` для структуры `services/api`, `services/workers`, `services/ml`, `clients/cli`, `clients/sdk-js` по плану в `services/`
-- [ ] T002 Описать сервисы `api`, `workers`, `ml-pipeline`, `postgres`, `redis`, `feast` в `docker-compose.yml`
-- [ ] T003 [P] Настроить Python-зависимости и скрипты сборки в `services/api/pyproject.toml` и `services/workers/pyproject.toml`
-- [ ] T004 [P] Сформировать `.env.example` и обновить переменные из quickstart в `.env.example`
+- [X] T001 Создать каталоги и базовые `__init__.py` для структуры `services/api`, `services/workers`, `services/ml`, `clients/cli`, `clients/sdk-js` по плану в `services/`
+- [X] T002 Описать сервисы `api`, `workers`, `ml-pipeline`, `postgres`, `redis`, `feast` в `docker-compose.yml`
+- [X] T003 [P] Настроить Python-зависимости и скрипты сборки в `services/api/pyproject.toml` и `services/workers/pyproject.toml`
+- [X] T004 [P] Сформировать `.env.example` и обновить переменные из quickstart в `.env.example`
 
 ---
 
