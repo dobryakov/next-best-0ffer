@@ -110,6 +110,8 @@
 - [X] T046 Актуализировать shell-клиент (cli), php-клиент, и js-клиент (sdk-js) в `clients`
 - [X] T049 [P] Подготовить Dockerfile для контейнера `workers` в `services/workers/Dockerfile` с установкой зависимостей и entrypoint для Celery
 - [X] T050 Обновить документацию (`specs/001-define-nbo-api/quickstart.md`, `README.md`) с инструкциями по сборке и запуску контейнера `workers`
+- [ ] T051 [P] Добавить сервис `scheduler` в `docker-compose.yml` для периодического запуска ALS и LightGBM пайплайнов
+- [ ] T052 [P] Описать автоматический пересчёт моделей в `specs/001-define-nbo-api/quickstart.md` и `README.md`, включая требования к .env и командам cron
 
 ---
 
