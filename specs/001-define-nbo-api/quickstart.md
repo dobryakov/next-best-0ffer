@@ -120,9 +120,16 @@ docker compose --profile perf run --rm perf \
   --headless --users 1 --spawn-rate 1 --run-time 30s --stop-timeout 1
 ```
 
-> При необходимости прогнать сценарии с запросами к `/nbo`, установите `PERF_ENABLE_NBO=1` и убедитесь, что применены все миграции (`alembic upgrade head`).
+Прогон с запросами к `/nbo` (включите `PERF_ENABLE_NBO=1` и убедитесь, что выполнен `alembic upgrade head`):
 
-> ℹ️ Dockerfile сервиса `api` копирует весь каталог `services/api` в `/app` внутри контейнера, поэтому тестовые директории (`tests`, `services/api/tests`) доступны без дополнительных volume-маппингов и вызов `docker compose run --rm api pytest` работает из коробки.
+```bash
+docker compose --profile perf run --rm \
+  -e PERF_ENABLE_NBO=1 perf \
+  --headless --users 1 --spawn-rate 1 --run-time 30s --stop-timeout 1 \
+  --host http://api:9090 --locustfile /mnt/locust/locustfile.py
+```
+
+ℹ️ Dockerfile сервиса `api` копирует весь каталог `services/api` в `/app` внутри контейнера, поэтому тестовые директории (`tests`, `services/api/tests`) доступны без дополнительных volume-маппингов и вызов `docker compose run --rm api pytest` работает из коробки.
 
 ## 7. ML-пайплайн
 
@@ -149,4 +156,3 @@ docker compose --profile perf run --rm perf \
 
 Перед использованием убедитесь, что сервисы из раздела 3 запущены,
 а переменные окружения настроены согласно `docs/configuration/env.md`.
-
