@@ -51,6 +51,8 @@ class CustomerRepository:
 
     def create(self, session: Session, dto: CustomerCreateDTO) -> Customer:
         now = datetime.now(tz=timezone.utc)
+        raw_state = dto.state.value if isinstance(dto.state, CustomerState) else str(dto.state)
+        state_enum = CustomerState(raw_state.lower())
         customer = Customer(
             id=dto.id,
             email=dto.email,
@@ -58,7 +60,7 @@ class CustomerRepository:
             name=dto.name,
             segments=list(dto.segments),
             attributes=dict(dto.attributes),
-            state=dto.state,
+            state=state_enum.value,
             version=1,
             created_at=now,
             updated_at=now,
@@ -99,7 +101,11 @@ class CustomerRepository:
         if dto.attributes is not None:
             _apply("attributes", dict(dto.attributes))
         if dto.state is not None:
-            _apply("state", dto.state)
+            raw_state = (
+                dto.state.value if isinstance(dto.state, CustomerState) else str(dto.state)
+            )
+            state_enum = CustomerState(raw_state.lower())
+            _apply("state", state_enum.value)
 
         if changes:
             customer.version += 1

@@ -62,7 +62,7 @@ class CustomerResponse(CustomerBase):
             name=customer.name,
             segments=list(customer.segments or []),
             attributes=dict(customer.attributes or {}),
-            state=customer.state,
+            state=CustomerState(str(customer.state)),
             version=customer.version,
             created_at=customer.created_at,
             updated_at=customer.updated_at,

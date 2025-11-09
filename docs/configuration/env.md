@@ -51,7 +51,7 @@
 | `LGBM_MODEL_PATH` | `/opt/models/lgbm.bin` | Путь до бинарной модели LightGBM. |
 | `NBO_RETRY_WINDOW_SECONDS` | `30` | Интервал повторного запроса рекомендаций. |
 | `EVENT_IDEMPOTENCY_WINDOW_SECONDS` | `600` | Временное окно идемпотентности событий. |
-| `AB_VARIANTS` | `control,treatmentA` | Список вариантов A/B экспериментов (CSV). |
+| `AB_VARIANTS` | `["control","treatmentA"]` | Список вариантов A/B экспериментов (JSON-массив строк). |
 
 ## Переменные для инструментов
 

@@ -8,7 +8,7 @@ from uuid import NAMESPACE_URL, uuid5
 import structlog
 from sqlalchemy.orm import Session
 
-from domain.events.idempotency import EventFingerprint, generate_event_identity
+from domain.events.idempotency import EventFingerprint, generate_event_identities
 from domain.events.repository import EventCreateDTO, EventRepository
 from infra.db.models.event import Event, EventCategory
 
@@ -48,14 +48,19 @@ class EventIngestionService:
             payload=dict(command.payload),
         )
 
+        fallback_tokens: List[str] = []
+
         if command.idempotency_token:
             idempotency_token = command.idempotency_token
             event_id = str(uuid5(NAMESPACE_URL, idempotency_token))
         else:
-            event_id, idempotency_token = generate_event_identity(
+            primary_identity, fallback_identities = generate_event_identities(
                 fingerprint,
                 window_seconds=idempotency_window_seconds,
             )
+            event_id = primary_identity.event_id
+            idempotency_token = primary_identity.token
+            fallback_tokens = [candidate.token for candidate in fallback_identities]
 
         dto = EventCreateDTO(
             event_id=event_id,
@@ -68,7 +73,15 @@ class EventIngestionService:
             payload=dict(command.payload),
         )
 
-        event, created = self._repository.create_or_get(session, dto)
+        alternate_tokens: List[str] | None = None
+        if fallback_tokens:
+            alternate_tokens = fallback_tokens
+
+        event, created = self._repository.create_or_get(
+            session,
+            dto,
+            alternate_tokens=alternate_tokens,
+        )
 
         log_event = "events.ingested" if created else "events.duplicate"
         self._logger.info(
@@ -79,6 +92,6 @@ class EventIngestionService:
             trace_id=trace_id,
         )
 
-        return event, created, idempotency_token
+        return event, created, event.idempotency_token
 
 

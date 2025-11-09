@@ -5,6 +5,7 @@ from enum import StrEnum
 from typing import Any, Dict, List
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import JSON
@@ -29,10 +30,17 @@ class Event(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     idempotency_token: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
     category: Mapped[EventCategory] = mapped_column(
-        Enum(EventCategory, name="event_category"), nullable=False
+        Enum(
+            EventCategory,
+            name="event_category",
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+            native_enum=False,
+            validate_strings=True,
+        ),
+        nullable=False,
     )
     customer_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=False), ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True
     )
     product_ids: Mapped[List[str]] = mapped_column(
         MutableList.as_mutable(JSON), default=list, nullable=False

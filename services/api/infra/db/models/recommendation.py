@@ -5,6 +5,7 @@ from enum import StrEnum
 from typing import Any, Dict, List
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
@@ -24,12 +25,18 @@ class Recommendation(Base):
         Index("uq_recommendations_customer", "customer_id", unique=True),
     )
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True)
     customer_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=False), ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True
     )
     status: Mapped[RecommendationStatus] = mapped_column(
-        Enum(RecommendationStatus, name="recommendation_status"),
+        Enum(
+            RecommendationStatus,
+            name="recommendation_status",
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+            native_enum=False,
+            validate_strings=True,
+        ),
         default=RecommendationStatus.PENDING,
         nullable=False,
     )
@@ -80,15 +87,21 @@ class CalculationJob(Base):
         ),
     )
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True)
     recommendation_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("recommendations.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=False), ForeignKey("recommendations.id", ondelete="CASCADE"), nullable=False
     )
     customer_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=False), ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True
     )
     status: Mapped[CalculationJobStatus] = mapped_column(
-        Enum(CalculationJobStatus, name="calculation_job_status"),
+        Enum(
+            CalculationJobStatus,
+            name="calculation_job_status",
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+            native_enum=False,
+            validate_strings=True,
+        ),
         default=CalculationJobStatus.PENDING,
         nullable=False,
     )

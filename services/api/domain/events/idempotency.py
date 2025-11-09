@@ -44,15 +44,61 @@ def _compute_bucket(dt: datetime, window_seconds: int) -> int:
     return epoch_seconds // window_seconds
 
 
+def _token_for_bucket(fingerprint: EventFingerprint, bucket: int) -> str:
+    payload = _canonical_payload(fingerprint, bucket)
+    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return digest
+
+
+@dataclass(frozen=True, slots=True)
+class EventIdentity:
+    token: str
+    event_id: str
+
+
 def generate_idempotency_token(
     fingerprint: EventFingerprint,
     *,
     window_seconds: int,
 ) -> str:
     bucket = _compute_bucket(fingerprint.occurred_at, window_seconds)
-    payload = _canonical_payload(fingerprint, bucket)
-    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
-    return digest
+    return _token_for_bucket(fingerprint, bucket)
+
+
+def _identity_for_bucket(
+    fingerprint: EventFingerprint,
+    bucket: int,
+) -> EventIdentity:
+    token = _token_for_bucket(fingerprint, bucket)
+    event_id = str(uuid5(NAMESPACE_URL, token))
+    return EventIdentity(token=token, event_id=event_id)
+
+
+def generate_event_identities(
+    fingerprint: EventFingerprint,
+    *,
+    window_seconds: int,
+) -> Tuple[EventIdentity, List[EventIdentity]]:
+    """
+    Возвращает основной идентификатор события и запасные варианты для соседних
+    временных бакетов. Это позволяет корректно обрабатывать границы окон
+    идемпотентности, когда запросы приходят около границы window_seconds.
+    """
+
+    primary_bucket = _compute_bucket(fingerprint.occurred_at, window_seconds)
+    primary = _identity_for_bucket(fingerprint, primary_bucket)
+
+    fallbacks: List[EventIdentity] = []
+    seen_tokens = {primary.token}
+
+    for delta in (-1, 1):
+        candidate_bucket = primary_bucket + delta
+        identity = _identity_for_bucket(fingerprint, candidate_bucket)
+        if identity.token not in seen_tokens:
+            fallbacks.append(identity)
+            seen_tokens.add(identity.token)
+
+    return primary, fallbacks
 
 
 def generate_event_identity(
@@ -60,8 +106,10 @@ def generate_event_identity(
     *,
     window_seconds: int,
 ) -> Tuple[str, str]:
-    token = generate_idempotency_token(fingerprint, window_seconds=window_seconds)
-    event_id = str(uuid5(NAMESPACE_URL, token))
-    return event_id, token
+    primary, _ = generate_event_identities(
+        fingerprint,
+        window_seconds=window_seconds,
+    )
+    return primary.event_id, primary.token
 
 

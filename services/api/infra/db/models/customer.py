@@ -5,6 +5,7 @@ from enum import StrEnum
 from typing import Any, Dict, List
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import JSON
@@ -21,7 +22,7 @@ class CustomerState(StrEnum):
 class Customer(Base):
     __tablename__ = "customers"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True)
     email: Mapped[str | None] = mapped_column(String(320), nullable=True)
     phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
     name: Mapped[str | None] = mapped_column(String(200), nullable=True)
@@ -32,7 +33,15 @@ class Customer(Base):
         MutableDict.as_mutable(JSON), default=dict, nullable=False
     )
     state: Mapped[CustomerState] = mapped_column(
-        Enum(CustomerState, name="customer_state"), default=CustomerState.ACTIVE, nullable=False
+        Enum(
+            CustomerState,
+            name="customer_state",
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+            native_enum=False,
+            validate_strings=True,
+        ),
+        default=CustomerState.ACTIVE,
+        nullable=False,
     )
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
@@ -51,7 +60,7 @@ class CustomerAuditLog(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     customer_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=False), ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True
     )
     version: Mapped[int] = mapped_column(Integer, nullable=False)
     change_type: Mapped[str] = mapped_column(String(32), nullable=False)

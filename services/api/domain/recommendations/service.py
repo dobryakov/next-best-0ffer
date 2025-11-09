@@ -18,7 +18,11 @@ from infra.db.models.recommendation import (
     RecommendationStatus,
 )
 from infra.queues import recommendations as recommendations_queue
-from services.workers.tasks.metrics import record_recommendation_job_scheduled
+try:
+    from services.workers.tasks.metrics import record_recommendation_job_scheduled
+except ModuleNotFoundError:  # pragma: no cover - fallback для standalone запуска API
+    def record_recommendation_job_scheduled(*_: object, **__: object) -> None:
+        return None
 
 
 class RecommendationError(Exception):

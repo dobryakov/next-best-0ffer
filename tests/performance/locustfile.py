@@ -7,12 +7,13 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import random
 import string
 from datetime import datetime, timezone
 from typing import List
-from uuid import uuid4
+from uuid import NAMESPACE_URL, uuid4, uuid5
 
 import requests
 from locust import HttpUser, between, events, task
@@ -24,10 +25,25 @@ PRODUCT_IDS = ["SKU-001", "SKU-002", "SKU-003", "SKU-004", "SKU-005"]
 CHANNELS = ["web", "mobile", "pos"]
 
 _CUSTOMER_IDS: List[str] = []
+_LOGGER = logging.getLogger(__name__)
+_CUSTOMER_NAMESPACE_PREFIX = "nbo-perf-user"
+ENABLE_NBO_TASKS = os.environ.get("PERF_ENABLE_NBO", "0") == "1"
 
 
 def _rand_trace() -> str:
     return str(uuid4())
+
+
+def _stable_customer_id(idx: int) -> str:
+    return str(uuid5(NAMESPACE_URL, f"{_CUSTOMER_NAMESPACE_PREFIX}-{idx}"))
+
+
+def _stable_contacts(idx: int, customer_id: str) -> tuple[str, str]:
+    email = f"{_CUSTOMER_NAMESPACE_PREFIX}-{idx}@loadtest.example.com"
+    raw = customer_id.replace("-", "")
+    numeric = str(int(raw[:12], 16)).zfill(12)
+    phone = f"+1987{numeric[:8]}"
+    return email, phone
 
 
 def _host_from_environment(environment_host: str | None) -> str:
@@ -44,11 +60,12 @@ def _bootstrap_customers(host: str) -> None:
     session = requests.Session()
     created: List[str] = []
     for idx in range(WARMUP_CUSTOMERS):
-        customer_id = str(uuid4())
+        customer_id = _stable_customer_id(idx)
+        email, phone = _stable_contacts(idx, customer_id)
         payload = {
             "id": customer_id,
-            "email": f"perf-user-{idx}@example.com",
-            "phone": f"+1234567{idx:04d}",
+            "email": email,
+            "phone": phone,
             "name": f"Perf Tester {idx}",
             "segments": random.choice(CUSTOMER_SEGMENTS),
             "attributes": {"cohort": "performance"},
@@ -59,13 +76,21 @@ def _bootstrap_customers(host: str) -> None:
             headers={"Content-Type": "application/json", TRACE_HEADER: _rand_trace()},
             timeout=10,
         )
-        response.raise_for_status()
-        created.append(customer_id)
+        if response.status_code == 201:
+            created.append(customer_id)
+        elif response.status_code == 409:
+            _LOGGER.info(
+                "Покупатель %s уже существует, используем существующую запись для нагрузки.",
+                customer_id,
+            )
+            created.append(customer_id)
+        else:
+            response.raise_for_status()
+
+    _CUSTOMER_IDS[:] = created
 
     for customer_id in created:
         _send_warmup_events(session, host, customer_id)
-
-    _CUSTOMER_IDS[:] = created
 
 
 def _send_warmup_events(session: requests.Session, host: str, customer_id: str) -> None:
@@ -144,32 +169,34 @@ class NBOUser(HttpUser):
             if response.status_code not in {202}:
                 response.failure(f"Unexpected status {response.status_code}")
 
-    @task(2)
-    def get_nbo(self) -> None:
-        headers = {TRACE_HEADER: _rand_trace()}
-        with self.client.get(
-            f"/nbo/{self.customer_id}",
-            params={"channel": random.choice(CHANNELS)},
-            headers=headers,
-            name="GET /nbo/{customer_id}",
-            catch_response=True,
-        ) as response:
-            if response.status_code not in {200, 202, 404}:
-                response.failure(f"Unexpected status {response.status_code}")
+    if ENABLE_NBO_TASKS:
 
-    @task(1)
-    def repeat_nbo(self) -> None:
-        """
-        Повторный запрос NBO имитирует клиента, который ожидает завершения расчёта.
-        """
-        headers = {TRACE_HEADER: _rand_trace()}
-        with self.client.get(
-            f"/nbo/{self.customer_id}",
-            headers=headers,
-            name="GET /nbo/{customer_id} (retry)",
-            catch_response=True,
-        ) as response:
-            if response.status_code not in {200, 202, 404}:
-                response.failure(f"Unexpected status {response.status_code}")
+        @task(2)
+        def get_nbo(self) -> None:
+            headers = {TRACE_HEADER: _rand_trace()}
+            with self.client.get(
+                f"/nbo/{self.customer_id}",
+                params={"channel": random.choice(CHANNELS)},
+                headers=headers,
+                name="GET /nbo/{customer_id}",
+                catch_response=True,
+            ) as response:
+                if response.status_code not in {200, 202, 404}:
+                    response.failure(f"Unexpected status {response.status_code}")
+
+        @task(1)
+        def repeat_nbo(self) -> None:
+            """
+            Повторный запрос NBO имитирует клиента, который ожидает завершения расчёта.
+            """
+            headers = {TRACE_HEADER: _rand_trace()}
+            with self.client.get(
+                f"/nbo/{self.customer_id}",
+                headers=headers,
+                name="GET /nbo/{customer_id} (retry)",
+                catch_response=True,
+            ) as response:
+                if response.status_code not in {200, 202, 404}:
+                    response.failure(f"Unexpected status {response.status_code}")
 
 

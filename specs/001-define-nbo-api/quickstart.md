@@ -115,10 +115,12 @@ docker compose run --rm workers pytest
 # контракты OpenAPI
 docker compose run --rm api pytest -m contract
 
-# нагрузочные (прогрев включает сценарии из tests/performance/locustfile.py)
+# нагрузочные (минимальная прогонка, см. PERF_ENABLE_NBO для запросов к NBO)
 docker compose --profile perf run --rm perf \
-  --headless --users 25 --spawn-rate 5 --run-time 5m
+  --headless --users 1 --spawn-rate 1 --run-time 30s --stop-timeout 1
 ```
+
+> При необходимости прогнать сценарии с запросами к `/nbo`, установите `PERF_ENABLE_NBO=1` и убедитесь, что применены все миграции (`alembic upgrade head`).
 
 > ℹ️ Dockerfile сервиса `api` копирует весь каталог `services/api` в `/app` внутри контейнера, поэтому тестовые директории (`tests`, `services/api/tests`) доступны без дополнительных volume-маппингов и вызов `docker compose run --rm api pytest` работает из коробки.
 

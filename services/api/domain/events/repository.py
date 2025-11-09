@@ -41,10 +41,19 @@ class EventRepository:
         self,
         session: Session,
         dto: EventCreateDTO,
+        alternate_tokens: List[str] | None = None,
     ) -> Tuple[Event, bool]:
         existing = self.get_by_token(session, dto.idempotency_token)
         if existing is not None:
             return existing, False
+
+        if alternate_tokens:
+            for token in alternate_tokens:
+                if token == dto.idempotency_token:
+                    continue
+                existing = self.get_by_token(session, token)
+                if existing is not None:
+                    return existing, False
 
         ingested_at = datetime.now(tz=timezone.utc)
         event = Event(
@@ -66,7 +75,16 @@ class EventRepository:
         except IntegrityError:
             session.rollback()
             # Попытка повторного чтения, если другая транзакция сохранила событие.
-            existing = self.get_by_token(session, dto.idempotency_token)
+            candidates = [dto.idempotency_token]
+            if alternate_tokens:
+                candidates.extend(token for token in alternate_tokens if token != dto.idempotency_token)
+
+            existing = None
+            for token in candidates:
+                existing = self.get_by_token(session, token)
+                if existing is not None:
+                    break
+
             if existing is None:
                 raise
             return existing, False
