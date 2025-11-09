@@ -120,6 +120,8 @@ docker compose --profile perf run --rm perf \
   --headless --users 25 --spawn-rate 5 --run-time 5m
 ```
 
+> ℹ️ Dockerfile сервиса `api` копирует весь каталог `services/api` в `/app` внутри контейнера, поэтому тестовые директории (`tests`, `services/api/tests`) доступны без дополнительных volume-маппингов и вызов `docker compose run --rm api pytest` работает из коробки.
+
 ## 7. ML-пайплайн
 
 - ALS (implicit) пересчитывается ежечасно: `docker compose run --rm ml-pipeline python -m pipelines.train_als --mode=batch`

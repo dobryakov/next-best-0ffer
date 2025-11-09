@@ -207,6 +207,9 @@ os.environ.setdefault("CELERY_BROKER_URL", "redis://redis:6379/0")
 os.environ.setdefault("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
 os.environ.setdefault("CELERY_TIMEZONE", "UTC")
 os.environ.setdefault("CELERY_DEFAULT_QUEUE", "nbo_default")
+os.environ["CELERY_IMPORTS"] = (
+    '["services.workers.tasks.events_ingest","services.workers.pipelines.recommendations_flow"]'
+)
 os.environ.setdefault("FEAST_REPO_PATH", "/opt/feast_repo")
 os.environ.setdefault("MODEL_REGISTRY_PATH", "/opt/models")
 os.environ.setdefault("NBO_RETRY_WINDOW_SECONDS", "30")

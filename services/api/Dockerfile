@@ -12,12 +12,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p services/api
-
-COPY pyproject.toml services/api/pyproject.toml
-COPY . services/api
-
-WORKDIR /app/services/api
+COPY pyproject.toml ./pyproject.toml
+COPY . .
 
 RUN pip install --upgrade pip setuptools wheel \
     && pip install -e ".[dev]"
