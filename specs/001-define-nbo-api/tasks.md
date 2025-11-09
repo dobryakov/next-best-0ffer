@@ -18,14 +18,14 @@
 
 **Purpose**: Настроить общую инфраструктуру: БД, очереди, конфигурацию и базовый FastAPI каркас.
 
-- [ ] T005 Инициализировать Alembic и общие настройки миграций в `services/api/infra/db/migrations/env.py`
-- [ ] T006 [P] Создать модуль подключения к БД и session factory в `services/api/infra/db/session.py`
-- [ ] T007 [P] Реализовать слой конфигурации с Pydantic Settings и загрузкой из `.env` в `services/api/infra/config/settings.py`
-- [ ] T008 [P] Настроить FastAPI приложение, маршрутизацию и зависимость настройки в `services/api/app/main.py`
-- [ ] T009 [P] Добавить middleware структурированного логирования, trace id и correlation id в `services/api/app/middleware/observability.py`
-- [ ] T010 Сконфигурировать Celery приложение и расписания задач в `services/workers/tasks/celery_app.py`
-- [ ] T011 [P] Описать общие параметры очередей и retry-политику в `services/workers/tasks/config.py`
-- [ ] T012 Реализовать health-check endpoint с проверкой PostgreSQL/Redis/Celery в `services/api/app/routes/health.py`
+- [X] T005 Инициализировать Alembic и общие настройки миграций в `services/api/infra/db/migrations/env.py`
+- [X] T006 [P] Создать модуль подключения к БД и session factory в `services/api/infra/db/session.py`
+- [X] T007 [P] Реализовать слой конфигурации с Pydantic Settings и загрузкой из `.env` в `services/api/infra/config/settings.py`
+- [X] T008 [P] Настроить FastAPI приложение, маршрутизацию и зависимость настройки в `services/api/app/main.py`
+- [X] T009 [P] Добавить middleware структурированного логирования, trace id и correlation id в `services/api/app/middleware/observability.py`
+- [X] T010 Сконфигурировать Celery приложение и расписания задач в `services/workers/tasks/celery_app.py`
+- [X] T011 [P] Описать общие параметры очередей и retry-политику в `services/workers/tasks/config.py`
+- [X] T012 Реализовать health-check endpoint с проверкой PostgreSQL/Redis/Celery в `services/api/app/routes/health.py`
 
 ---
 
