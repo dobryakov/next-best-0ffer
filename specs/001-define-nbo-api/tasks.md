@@ -81,18 +81,18 @@
 
 ### Tests for User Story 3
 
-- [ ] T032 [P] [US3] Добавить контрактный тест GET `/nbo/{customer_id}` на ответы 200/202/404 в `tests/contract/test_recommendations_contract.py`
-- [ ] T033 [P] [US3] Реализовать интеграционный сценарий полного расчёта NBO и повторного запроса в `tests/integration/test_nbo_flow.py`
+- [X] T032 [P] [US3] Добавить контрактный тест GET `/nbo/{customer_id}` на ответы 200/202/404 в `tests/contract/test_recommendations_contract.py`
+- [X] T033 [P] [US3] Реализовать интеграционный сценарий полного расчёта NBO и повторного запроса в `tests/integration/test_nbo_flow.py`
 
 ### Implementation for User Story 3
 
-- [ ] T034 [P] [US3] Создать миграцию таблиц `recommendations` и `calculation_jobs` в `services/api/infra/db/migrations/versions/create_recommendations_table.py`
-- [ ] T035 [P] [US3] Описать модели `Recommendation` и `CalculationJob` с ограничениями статусов в `services/api/infra/db/models/recommendation.py`
-- [ ] T036 [P] [US3] Реализовать сервис оркестрации расчёта (ALS + LightGBM) и rerank правил в `services/api/domain/recommendations/service.py`
-- [ ] T037 [US3] Создать воркер-пайплайн генерации кандидатов и ранжирования в `services/workers/pipelines/recommendations_flow.py`
-- [ ] T038 [US3] Реализовать endpoint GET `/nbo/{customer_id}` с обработкой статусов и retry в `services/api/app/routes/recommendations.py`
-- [ ] T039 [US3] Добавить объяснения `reason` и контроль A/B вариантов в `services/api/domain/recommendations/explanations.py`
-- [ ] T040 [US3] Обновить OpenAPI спецификацию рекомендаций и статусов в `specs/001-define-nbo-api/contracts/openapi.yaml`
+- [X] T034 [P] [US3] Создать миграцию таблиц `recommendations` и `calculation_jobs` в `services/api/infra/db/migrations/versions/create_recommendations_table.py`
+- [X] T035 [P] [US3] Описать модели `Recommendation` и `CalculationJob` с ограничениями статусов в `services/api/infra/db/models/recommendation.py`
+- [X] T036 [P] [US3] Реализовать сервис оркестрации расчёта (ALS + LightGBM) и rerank правил в `services/api/domain/recommendations/service.py`
+- [X] T037 [US3] Создать воркер-пайплайн генерации кандидатов и ранжирования в `services/workers/pipelines/recommendations_flow.py`
+- [X] T038 [US3] Реализовать endpoint GET `/nbo/{customer_id}` с обработкой статусов и retry в `services/api/app/routes/recommendations.py`
+- [X] T039 [US3] Добавить объяснения `reason` и контроль A/B вариантов в `services/api/domain/recommendations/explanations.py`
+- [X] T040 [US3] Обновить OpenAPI спецификацию рекомендаций и статусов в `specs/001-define-nbo-api/contracts/openapi.yaml`
 
 ---
 

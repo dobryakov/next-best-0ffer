@@ -33,6 +33,70 @@ workers_path = _PROJECT_DIR.parent / "workers"
 workers_pkg.__path__ = [str(workers_path)]
 tasks_pkg.__path__ = [str(workers_path / "tasks")]
 
+pipelines_pkg = sys.modules.setdefault(
+    "services.workers.pipelines", ModuleType("services.workers.pipelines")
+)
+
+recommendations_flow_module = ModuleType("services.workers.pipelines.recommendations_flow")
+recommendations_flow_module.enqueued_jobs: list[dict[str, Any]] = []
+
+
+def _enqueue_recommendation_calculation(
+    *,
+    job_id: str,
+    customer_id: str,
+    channel: str | None,
+    variant: str,
+) -> str:
+    record = {
+        "job_id": job_id,
+        "customer_id": customer_id,
+        "channel": channel,
+        "variant": variant,
+    }
+    recommendations_flow_module.enqueued_jobs.append(record)
+    result = celery_app_module.celery_app.send_task(
+        "services.workers.pipelines.recommendations_flow.calculate_recommendations",
+        kwargs={
+            "job_id": job_id,
+            "customer_id": customer_id,
+            "channel": channel,
+            "variant": variant,
+        },
+        task_id=job_id,
+    )
+    return result.id
+
+
+def _run_recommendation_job(
+    *,
+    job_id: str,
+    customer_id: str,
+    channel: str | None,
+    variant: str,
+) -> str:
+    from domain.recommendations.service import RecommendationOrchestrationService
+    from infra.db.session import session_scope
+
+    service = RecommendationOrchestrationService()
+    with session_scope() as session:
+        service.run_job(
+            session,
+            job_id=job_id,
+            customer_id=customer_id,
+            channel=channel,
+            variant=variant,
+        )
+    return job_id
+
+
+recommendations_flow_module.enqueue_recommendation_calculation = (  # type: ignore[attr-defined]
+    _enqueue_recommendation_calculation
+)
+recommendations_flow_module.run_recommendation_job = _run_recommendation_job  # type: ignore[attr-defined]
+sys.modules["services.workers.pipelines.recommendations_flow"] = recommendations_flow_module
+setattr(pipelines_pkg, "recommendations_flow", recommendations_flow_module)
+
 celery_app_module = ModuleType("services.workers.tasks.celery_app")
 
 
@@ -50,6 +114,12 @@ class _DummyCelery:
     def __init__(self) -> None:
         self.control = _DummyCeleryControl()
         self.sent_tasks: list[dict[str, Any]] = []
+
+    def task(self, *args: Any, **kwargs: Any):
+        def decorator(func):
+            return func
+
+        return decorator
 
     def send_task(
         self,
@@ -108,10 +178,14 @@ metrics_module.record_event_enqueued = lambda *args, **kwargs: None  # type: ign
 metrics_module.record_event_processing_started = lambda *args, **kwargs: None  # type: ignore[attr-defined]
 metrics_module.record_event_processing_completed = lambda *args, **kwargs: None  # type: ignore[attr-defined]
 metrics_module.observe_event_processing_duration = lambda *args, **kwargs: None  # type: ignore[attr-defined]
+metrics_module.record_recommendation_job_scheduled = lambda *args, **kwargs: None  # type: ignore[attr-defined]
+metrics_module.record_recommendation_job_completed = lambda *args, **kwargs: None  # type: ignore[attr-defined]
+metrics_module.observe_recommendation_latency = lambda *args, **kwargs: None  # type: ignore[attr-defined]
 sys.modules["services.workers.tasks.metrics"] = metrics_module
 tasks_pkg.metrics = metrics_module
 
 setattr(workers_pkg, "tasks", tasks_pkg)
+setattr(workers_pkg, "pipelines", pipelines_pkg)
 services_pkg = sys.modules["services"]
 setattr(services_pkg, "workers", workers_pkg)
 
@@ -146,6 +220,7 @@ from infra.db import session as db_session  # noqa: E402
 from infra.db.models import Base  # noqa: E402
 import infra.db.models.customer  # noqa: E402,F401
 import infra.db.models.event  # noqa: E402,F401
+import infra.db.models.recommendation  # noqa: E402,F401
 import domain.customers.audit  # noqa: E402,F401
 
 

@@ -28,6 +28,25 @@ _EVENTS_PROCESSING_DURATION = Histogram(
     buckets=(0.1, 0.5, 1, 2, 5, 10, 30),
 )
 
+_RECOMMENDATION_JOBS_SCHEDULED = Counter(
+    "nbo_recommendation_jobs_scheduled_total",
+    "Количество задач расчёта рекомендаций, поставленных в очередь.",
+    ["variant", "channel"],
+)
+
+_RECOMMENDATION_JOBS_COMPLETED = Counter(
+    "nbo_recommendation_jobs_completed_total",
+    "Количество завершённых задач расчёта рекомендаций по результату.",
+    ["variant", "outcome"],
+)
+
+_RECOMMENDATION_LATENCY = Histogram(
+    "nbo_recommendation_job_latency_seconds",
+    "Время расчёта рекомендаций.",
+    ["variant"],
+    buckets=(0.1, 0.5, 1, 2, 5, 10, 30, 60),
+)
+
 
 def record_event_enqueued(category: str, channel: str) -> None:
     _EVENTS_ENQUEUED.labels(category=category, channel=channel).inc()
@@ -43,5 +62,17 @@ def record_event_processing_completed(category: str, outcome: str) -> None:
 
 def observe_event_processing_duration(category: str, duration_seconds: float) -> None:
     _EVENTS_PROCESSING_DURATION.labels(category=category).observe(duration_seconds)
+
+
+def record_recommendation_job_scheduled(variant: str, channel: str) -> None:
+    _RECOMMENDATION_JOBS_SCHEDULED.labels(variant=variant, channel=channel).inc()
+
+
+def record_recommendation_job_completed(variant: str, outcome: str) -> None:
+    _RECOMMENDATION_JOBS_COMPLETED.labels(variant=variant, outcome=outcome).inc()
+
+
+def observe_recommendation_latency(variant: str, duration_seconds: float) -> None:
+    _RECOMMENDATION_LATENCY.labels(variant=variant).observe(duration_seconds)
 
 

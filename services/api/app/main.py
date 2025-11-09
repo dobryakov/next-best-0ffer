@@ -7,6 +7,7 @@ from app.middleware.observability import ObservabilityMiddleware, configure_stru
 from app.routes import customers as customers_routes
 from app.routes import events as events_routes
 from app.routes import health as health_routes
+from app.routes import recommendations as recommendations_routes
 from infra.config.settings import Settings, get_settings
 
 SERVICE_NAME = "nbo-api"
@@ -28,6 +29,7 @@ def create_app() -> FastAPI:
     app.include_router(health_routes.router)
     app.include_router(customers_routes.router)
     app.include_router(events_routes.router)
+    app.include_router(recommendations_routes.router)
 
     @app.get("/_/settings", tags=["internal"], include_in_schema=False)
     def read_settings(current: Settings = Depends(get_settings)) -> dict[str, str | int]:
