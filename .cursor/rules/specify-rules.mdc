@@ -1,0 +1,29 @@
+# next-best-0ffer Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-11-09
+
+## Active Technologies
+
+- Python 3.11 (API, воркеры), SQL (PostgreSQL) + FastAPI, Pydantic, SQLAlchemy, Celery, Redis, scikit-learn, implicit (ALS), LightGBM, Feast (001-define-nbo-api)
+
+## Project Structure
+
+```text
+src/
+tests/
+```
+
+## Commands
+
+cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] pytest [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] ruff check .
+
+## Code Style
+
+Python 3.11 (API, воркеры), SQL (PostgreSQL): Follow standard conventions
+
+## Recent Changes
+
+- 001-define-nbo-api: Added Python 3.11 (API, воркеры), SQL (PostgreSQL) + FastAPI, Pydantic, SQLAlchemy, Celery, Redis, scikit-learn, implicit (ALS), LightGBM, Feast
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->

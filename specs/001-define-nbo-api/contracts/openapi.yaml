@@ -1,0 +1,364 @@
+openapi: 3.1.0
+info:
+  title: Next Best Offer API
+  version: 0.1.0
+  description: >
+    REST API для управления покупателями, продуктами, событиями и получения
+    Next Best Offer с пояснениями причин.
+servers:
+  - url: https://api.example.com
+    description: Production (replace with actual host)
+  - url: https://staging.api.example.com
+    description: Staging
+tags:
+  - name: Customers
+  - name: Products
+  - name: Events
+  - name: Recommendations
+paths:
+  /customers:
+    post:
+      tags: [Customers]
+      summary: Создать покупателя
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerUpsertRequest'
+      responses:
+        '201':
+          description: Покупатель создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /customer/{customer_id}:
+    put:
+      tags: [Customers]
+      summary: Обновить покупателя
+      operationId: updateCustomer
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerUpsertRequest'
+      responses:
+        '200':
+          description: Покупатель обновлён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /products:
+    post:
+      tags: [Products]
+      summary: Создать продукт
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpsertRequest'
+      responses:
+        '201':
+          description: Продукт создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /products/{product_id}:
+    put:
+      tags: [Products]
+      summary: Обновить продукт
+      operationId: updateProduct
+      parameters:
+        - $ref: '#/components/parameters/ProductId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpsertRequest'
+      responses:
+        '200':
+          description: Продукт обновлён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /events:
+    post:
+      tags: [Events]
+      summary: Зарегистрировать событие
+      operationId: createEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+      responses:
+        '202':
+          description: Событие принято к обработке
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /nbo/{customer_id}:
+    get:
+      tags: [Recommendations]
+      summary: Получить рекомендации для покупателя
+      operationId: getNextBestOffer
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+        - in: query
+          name: channel
+          description: Канал, для которого запрашивается рекомендация
+          schema:
+            type: string
+        - in: query
+          name: variant
+          description: Вариант эксперимента (`control`/`treatmentA`/`treatmentB`)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Рекомендации готовы
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+        '202':
+          description: Рекомендации ещё считаются, повторите запрос позже
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationPendingResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+components:
+  parameters:
+    CustomerId:
+      name: customer_id
+      in: path
+      required: true
+      description: UUID покупателя
+      schema:
+        type: string
+        format: uuid
+    ProductId:
+      name: product_id
+      in: path
+      required: true
+      description: SKU/артикул товара
+      schema:
+        type: string
+  schemas:
+    CustomerUpsertRequest:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          pattern: '^\+[1-9]\d{1,14}$'
+        name:
+          type: string
+          maxLength: 200
+        segments:
+          type: array
+          items:
+            type: string
+          maxItems: 20
+        attributes:
+          type: object
+          additionalProperties: true
+    CustomerResponse:
+      allOf:
+        - $ref: '#/components/schemas/CustomerUpsertRequest'
+        - type: object
+          properties:
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+    ProductUpsertRequest:
+      type: object
+      required: [id, title, category, price, availability]
+      properties:
+        id:
+          type: string
+          maxLength: 64
+        title:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+        price:
+          type: number
+          format: float
+          minimum: 0
+        availability:
+          type: object
+          additionalProperties:
+            type: boolean
+        attributes:
+          type: object
+          additionalProperties: true
+    ProductResponse:
+      allOf:
+        - $ref: '#/components/schemas/ProductUpsertRequest'
+        - type: object
+          properties:
+            updated_at:
+              type: string
+              format: date-time
+    EventRequest:
+      type: object
+      required: [category, customer_id, occurred_at, channel]
+      properties:
+        idempotency_token:
+          type: string
+          description: Детеминированный токен, если клиент его вычисляет
+        category:
+          type: string
+          enum: [view, search, add_to_cart, purchase]
+        customer_id:
+          type: string
+          format: uuid
+        product_ids:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        channel:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
+        payload:
+          type: object
+          additionalProperties: true
+    RecommendationResponse:
+      type: object
+      required: [customer_id, offers, generated_at]
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+        offers:
+          type: array
+          items:
+            type: object
+            required: [product_id, score, reason]
+            properties:
+              product_id:
+                type: string
+              score:
+                type: number
+                format: float
+              reason:
+                type: string
+              variant:
+                type: string
+              features_snapshot:
+                type: object
+                additionalProperties: true
+          maxItems: 10
+        generated_at:
+          type: string
+          format: date-time
+        model_version:
+          type: string
+        experiment_variant:
+          type: string
+    RecommendationPendingResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [pending]
+        retry_after:
+          type: string
+          format: date-time
+        reason:
+          type: string
+  responses:
+    ValidationError:
+      description: Ошибка валидации входных данных
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ConflictError:
+      description: Конфликт из-за дубликата или нарушения идемпотентности
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServerError:
+      description: Внутренняя ошибка сервиса
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        trace_id:
+          type: string
+
