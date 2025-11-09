@@ -11,5 +11,5 @@ metadata = Base.metadata
 
 
 # Импортируем подмодули моделей после определения Base, чтобы они зарегистрировались в metadata.
-from services.api.infra.db.models import customer  # noqa: E402,F401,E702
+from infra.db.models import customer  # noqa: E402,F401,E702
 

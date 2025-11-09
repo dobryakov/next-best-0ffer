@@ -9,10 +9,14 @@ from celery import Celery
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy import text
 
-from services.api.infra.config.settings import Settings, get_settings
-from services.api.infra.db.session import session_scope
-from services.workers.tasks.celery_app import celery_app
-from services.workers.tasks.config import HEALTHCHECK_TIMEOUT
+from infra.config.settings import Settings, get_settings
+from infra.db.session import session_scope
+try:
+    from services.workers.tasks.celery_app import celery_app
+    from services.workers.tasks.config import HEALTHCHECK_TIMEOUT
+except ModuleNotFoundError:  # pragma: no cover - fallback when workers package isn't available
+    celery_app = None  # type: ignore[assignment]
+    HEALTHCHECK_TIMEOUT = 1
 from pydantic import BaseModel
 
 
@@ -59,8 +63,11 @@ async def _check_redis(settings: Settings) -> ComponentHealth:
         await client.close()
 
 
-async def _check_celery(app: Celery) -> ComponentHealth:
+async def _check_celery(app: Celery | None) -> ComponentHealth:
     start = time.perf_counter()
+
+    if app is None:
+        return ComponentHealth(status="error", detail="Celery app is not available in API image")
 
     try:
         result = await asyncio.to_thread(app.control.ping, timeout=HEALTHCHECK_TIMEOUT)

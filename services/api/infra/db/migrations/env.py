@@ -14,8 +14,8 @@ ROOT_DIR = Path(__file__).resolve().parents[5]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from services.api.infra.config.settings import get_settings  # noqa: E402
-from services.api.infra.db.models import metadata  # noqa: E402
+from infra.config.settings import get_settings  # noqa: E402
+from infra.db.models import metadata  # noqa: E402
 
 config = context.config
 
@@ -42,7 +42,7 @@ def _configure_logging() -> None:
 
 
 def get_target_metadata():
-    _import_submodules("services.api.infra.db.models")
+    _import_submodules("infra.db.models")
     return metadata
 
 

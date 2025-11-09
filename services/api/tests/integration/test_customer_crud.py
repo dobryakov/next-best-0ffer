@@ -5,7 +5,7 @@ import uuid
 import pytest
 from sqlalchemy import select
 
-from services.api.infra.db.models.customer import Customer
+from infra.db.models.customer import Customer
 
 
 @pytest.mark.integration

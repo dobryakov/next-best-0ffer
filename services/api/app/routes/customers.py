@@ -3,17 +3,17 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
-from services.api.app.schemas.customer import (
+from app.schemas.customer import (
     CustomerCreateRequest,
     CustomerResponse,
     CustomerUpdateRequest,
 )
-from services.api.domain.customers.repository import (
+from domain.customers.repository import (
     CustomerConflictError,
     CustomerNotFoundError,
 )
-from services.api.domain.customers.service import CustomerService
-from services.api.infra.db.session import get_session
+from domain.customers.service import CustomerService
+from infra.db.session import get_session
 
 router = APIRouter(tags=["Customers"])
 

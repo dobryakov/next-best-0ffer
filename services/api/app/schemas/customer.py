@@ -6,7 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
-from services.api.infra.db.models.customer import Customer, CustomerState
+from infra.db.models.customer import Customer, CustomerState
 
 PHONE_PATTERN = r"^\+[1-9]\d{1,14}$"
 

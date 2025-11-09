@@ -5,15 +5,15 @@ from typing import Any, Dict, Tuple
 import structlog
 from sqlalchemy.orm import Session
 
-from services.api.domain.customers.repository import (
+from domain.customers.repository import (
     CustomerConflictError,
     CustomerCreateDTO,
     CustomerNotFoundError,
     CustomerRepository,
     CustomerUpdateDTO,
 )
-from services.api.domain.customers.audit import CustomerAuditTrail
-from services.api.infra.db.models.customer import Customer, CustomerState
+from domain.customers.audit import CustomerAuditTrail
+from infra.db.models.customer import Customer, CustomerState
 
 
 class CustomerService:

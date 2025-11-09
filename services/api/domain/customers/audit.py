@@ -5,7 +5,7 @@ from typing import Any, Dict
 import structlog
 from sqlalchemy.orm import Session
 
-from services.api.infra.db.models.customer import Customer, CustomerAuditLog
+from infra.db.models.customer import Customer, CustomerAuditLog
 
 
 class CustomerAuditTrail:

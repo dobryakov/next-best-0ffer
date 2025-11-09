@@ -3,10 +3,10 @@ from __future__ import annotations
 from fastapi import Depends, FastAPI
 from fastapi.responses import JSONResponse
 
-from services.api.app.middleware.observability import ObservabilityMiddleware, configure_structlog
-from services.api.app.routes import customers as customers_routes
-from services.api.app.routes import health as health_routes
-from services.api.infra.config.settings import Settings, get_settings
+from app.middleware.observability import ObservabilityMiddleware, configure_structlog
+from app.routes import customers as customers_routes
+from app.routes import health as health_routes
+from infra.config.settings import Settings, get_settings
 
 SERVICE_NAME = "nbo-api"
 

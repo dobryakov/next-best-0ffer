@@ -9,7 +9,7 @@ from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import JSON
 
-from services.api.infra.db.models import Base
+from infra.db.models import Base
 
 
 class CustomerState(StrEnum):

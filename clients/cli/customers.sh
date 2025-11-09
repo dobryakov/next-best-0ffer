@@ -8,10 +8,7 @@ API_URL="${API_URL:-http://localhost:9090}"
 TRACE_ID_HEADER="X-Trace-Id"
 
 trace_id() {
-  python - <<'PYCODE'
-import uuid
-print(uuid.uuid4().hex)
-PYCODE
+  tr -d '\n' < /proc/sys/kernel/random/uuid
 }
 
 create_customer() {

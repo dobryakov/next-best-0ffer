@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Tuple
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from services.api.infra.db.models.customer import Customer, CustomerState
+from infra.db.models.customer import Customer, CustomerState
 
 
 class CustomerRepositoryError(Exception):

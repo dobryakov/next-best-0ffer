@@ -79,11 +79,11 @@ os.environ["AB_VARIANTS"] = '["control","treatmentA"]'
 os.environ.setdefault("TRACING_ENDPOINT", "http://jaeger:4318")
 os.environ.setdefault("METRICS_PORT", "9091")
 
-from services.api.app.main import create_app  # noqa: E402
-from services.api.infra.db import session as db_session  # noqa: E402
-from services.api.infra.db.models import Base  # noqa: E402
-import services.api.infra.db.models.customer  # noqa: E402,F401
-import services.api.domain.customers.audit  # noqa: E402,F401
+from app.main import create_app  # noqa: E402
+from infra.db import session as db_session  # noqa: E402
+from infra.db.models import Base  # noqa: E402
+import infra.db.models.customer  # noqa: E402,F401
+import domain.customers.audit  # noqa: E402,F401
 
 
 @pytest.fixture(scope="session")
