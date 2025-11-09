@@ -40,7 +40,7 @@
 | `CELERY_RESULT_BACKEND` | `redis://redis:6379/1` | Хранилище результатов задач. |
 | `CELERY_TIMEZONE` | `UTC` | Таймзона планировщика. |
 | `CELERY_DEFAULT_QUEUE` | `nbo_default` | Базовая очередь для задач. |
-| `CELERY_IMPORTS` | `services.workers.tasks.events_ingest,services.workers.tasks.recommendations` | Дополнительные модули для автозагрузки задач. Формат — CSV. |
+| `CELERY_IMPORTS` | `["services.workers.tasks.events_ingest","services.workers.pipelines.recommendations_flow"]` | Дополнительные модули для автозагрузки задач. Формат — JSON-массив строк. |
 
 ## Параметры ML и бизнес-логики
 
