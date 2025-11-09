@@ -23,5 +23,3 @@ RUN pip install --upgrade pip setuptools wheel \
     && pip install -e ".[dev]"
 
 CMD ["uvicorn", "services.api.app.main:app", "--host", "0.0.0.0", "--port", "9090"]
-
-
