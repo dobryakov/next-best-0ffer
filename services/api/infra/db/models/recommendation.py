@@ -25,7 +25,7 @@ class Recommendation(Base):
         Index("uq_recommendations_customer", "customer_id", unique=True),
     )
 
-    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
     customer_id: Mapped[str] = mapped_column(
         UUID(as_uuid=False), ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True
     )
@@ -87,9 +87,9 @@ class CalculationJob(Base):
         ),
     )
 
-    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
     recommendation_id: Mapped[str] = mapped_column(
-        UUID(as_uuid=False), ForeignKey("recommendations.id", ondelete="CASCADE"), nullable=False
+        String(36), ForeignKey("recommendations.id", ondelete="CASCADE"), nullable=False
     )
     customer_id: Mapped[str] = mapped_column(
         UUID(as_uuid=False), ForeignKey("customers.id", ondelete="CASCADE"), nullable=False, index=True
