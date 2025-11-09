@@ -59,18 +59,18 @@
 
 ### Tests for User Story 2
 
-- [ ] T023 [P] [US2] Добавить контрактный тест POST `/events` с обязательными и дополнительными полями в `tests/contract/test_events_contract.py`
-- [ ] T024 [P] [US2] Реализовать интеграционный сценарий регистрации и дедупликации событий в `tests/integration/test_event_ingestion.py`
+- [X] T023 [P] [US2] Добавить контрактный тест POST `/events` с обязательными и дополнительными полями в `tests/contract/test_events_contract.py`
+- [X] T024 [P] [US2] Реализовать интеграционный сценарий регистрации и дедупликации событий в `tests/integration/test_event_ingestion.py`
 
 ### Implementation for User Story 2
 
-- [ ] T025 [P] [US2] Создать миграцию таблицы `events` с foreign key и idempotency индексом в `services/api/infra/db/migrations/versions/create_events_table.py`
-- [ ] T026 [P] [US2] Определить модель `Event` с проверками категорий и каналов в `services/api/infra/db/models/event.py`
-- [ ] T027 [P] [US2] Реализовать репозиторий событий с вычислением детерминированного идентификатора в `services/api/domain/events/repository.py`
-- [ ] T028 [US2] Вынести генерацию токена идемпотентности и ограничения окна в `services/api/domain/events/idempotency.py`
-- [ ] T029 [US2] Реализовать маршрут POST `/events` с постановкой задач в очередь и ответом 202 в `services/api/app/routes/events.py`
-- [ ] T030 [US2] Создать Celery-задачу обогащения признаков и записи в feature store в `services/workers/tasks/events_ingest.py`
-- [ ] T031 [US2] Добавить метрики очереди событий и экспорт Prometheus в `services/workers/tasks/metrics.py`
+- [X] T025 [P] [US2] Создать миграцию таблицы `events` с foreign key и idempotency индексом в `services/api/infra/db/migrations/versions/create_events_table.py`
+- [X] T026 [P] [US2] Определить модель `Event` с проверками категорий и каналов в `services/api/infra/db/models/event.py`
+- [X] T027 [P] [US2] Реализовать репозиторий событий с вычислением детерминированного идентификатора в `services/api/domain/events/repository.py`
+- [X] T028 [US2] Вынести генерацию токена идемпотентности и ограничения окна в `services/api/domain/events/idempotency.py`
+- [X] T029 [US2] Реализовать маршрут POST `/events` с постановкой задач в очередь и ответом 202 в `services/api/app/routes/events.py`
+- [X] T030 [US2] Создать Celery-задачу обогащения признаков и записи в feature store в `services/workers/tasks/events_ingest.py`
+- [X] T031 [US2] Добавить метрики очереди событий и экспорт Prometheus в `services/workers/tasks/metrics.py`
 
 ---
 

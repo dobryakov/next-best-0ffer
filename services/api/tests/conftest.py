@@ -29,6 +29,10 @@ if "services.api" not in sys.modules:
 workers_pkg = sys.modules.setdefault("services.workers", ModuleType("services.workers"))
 tasks_pkg = sys.modules.setdefault("services.workers.tasks", ModuleType("services.workers.tasks"))
 
+workers_path = _PROJECT_DIR.parent / "workers"
+workers_pkg.__path__ = [str(workers_path)]
+tasks_pkg.__path__ = [str(workers_path / "tasks")]
+
 celery_app_module = ModuleType("services.workers.tasks.celery_app")
 
 
@@ -37,18 +41,75 @@ class _DummyCeleryControl:
         return [{"worker": "pong"}]
 
 
+class _DummyAsyncResult:
+    def __init__(self, task_id: str) -> None:
+        self.id = task_id
+
+
 class _DummyCelery:
-    control = _DummyCeleryControl()
+    def __init__(self) -> None:
+        self.control = _DummyCeleryControl()
+        self.sent_tasks: list[dict[str, Any]] = []
+
+    def send_task(
+        self,
+        name: str,
+        args: tuple[Any, ...] | None = None,
+        kwargs: dict[str, Any] | None = None,
+        **options: Any,
+    ) -> _DummyAsyncResult:
+        task_id = options.get("task_id") or f"task-{len(self.sent_tasks)+1}"
+        record = {
+            "name": name,
+            "args": args or tuple(),
+            "kwargs": kwargs or {},
+            "options": options,
+            "task_id": task_id,
+        }
+        self.sent_tasks.append(record)
+        return _DummyAsyncResult(task_id)
 
 
 celery_app_module.celery_app = _DummyCelery()
 tasks_pkg.celery_app = celery_app_module
 sys.modules["services.workers.tasks.celery_app"] = celery_app_module
 
+events_ingest_module = ModuleType("services.workers.tasks.events_ingest")
+
+
+def _enqueue_event_processing(
+    *,
+    event_id: str,
+    event_payload: dict[str, Any],
+    priority: int | None = None,
+) -> str:
+    options: dict[str, Any] = {"task_id": event_id}
+    if priority is not None:
+        options["priority"] = priority
+    result = celery_app_module.celery_app.send_task(
+        "services.workers.tasks.events_ingest.process_event",
+        kwargs={"event_id": event_id, "payload": event_payload},
+        **options,
+    )
+    return result.id
+
+
+events_ingest_module.enqueue_event_processing = _enqueue_event_processing  # type: ignore[attr-defined]
+sys.modules["services.workers.tasks.events_ingest"] = events_ingest_module
+tasks_pkg.events_ingest = events_ingest_module
+
 config_module = ModuleType("services.workers.tasks.config")
 config_module.HEALTHCHECK_TIMEOUT = 1
 sys.modules["services.workers.tasks.config"] = config_module
 tasks_pkg.config = config_module
+
+metrics_module = ModuleType("services.workers.tasks.metrics")
+metrics_module.record_event_enqueued = lambda *args, **kwargs: None  # type: ignore[attr-defined]
+metrics_module.record_event_processing_started = lambda *args, **kwargs: None  # type: ignore[attr-defined]
+metrics_module.record_event_processing_completed = lambda *args, **kwargs: None  # type: ignore[attr-defined]
+metrics_module.observe_event_processing_duration = lambda *args, **kwargs: None  # type: ignore[attr-defined]
+sys.modules["services.workers.tasks.metrics"] = metrics_module
+tasks_pkg.metrics = metrics_module
 
 setattr(workers_pkg, "tasks", tasks_pkg)
 services_pkg = sys.modules["services"]
@@ -75,6 +136,7 @@ os.environ.setdefault("CELERY_DEFAULT_QUEUE", "nbo_default")
 os.environ.setdefault("FEAST_REPO_PATH", "/opt/feast_repo")
 os.environ.setdefault("MODEL_REGISTRY_PATH", "/opt/models")
 os.environ.setdefault("NBO_RETRY_WINDOW_SECONDS", "30")
+os.environ.setdefault("EVENT_IDEMPOTENCY_WINDOW_SECONDS", "600")
 os.environ["AB_VARIANTS"] = '["control","treatmentA"]'
 os.environ.setdefault("TRACING_ENDPOINT", "http://jaeger:4318")
 os.environ.setdefault("METRICS_PORT", "9091")
@@ -83,6 +145,7 @@ from app.main import create_app  # noqa: E402
 from infra.db import session as db_session  # noqa: E402
 from infra.db.models import Base  # noqa: E402
 import infra.db.models.customer  # noqa: E402,F401
+import infra.db.models.event  # noqa: E402,F401
 import domain.customers.audit  # noqa: E402,F401
 
 

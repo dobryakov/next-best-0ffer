@@ -47,6 +47,9 @@ class Settings(BaseSettings):
     lgbm_model_path: Path = Field(default=Path("/opt/models/lgbm.bin"), alias="LGBM_MODEL_PATH")
 
     nbo_retry_window_seconds: int = Field(default=30, alias="NBO_RETRY_WINDOW_SECONDS")
+    event_idempotency_window_seconds: int = Field(
+        default=600, alias="EVENT_IDEMPOTENCY_WINDOW_SECONDS"
+    )
     ab_variants: List[str] = Field(
         default_factory=lambda: ["control", "treatmentA"],
         alias="AB_VARIANTS",

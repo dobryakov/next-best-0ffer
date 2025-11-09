@@ -47,7 +47,7 @@ include = ["app", "domain", "infra"]
 
 [tool.pytest.ini_options]
 addopts = "--strict-markers --maxfail=1"
-testpaths = ["tests"]
+testpaths = ["tests", "services/api/tests"]
 markers = [
   "contract: контрактные тесты API",
   "integration: интеграционные сценарии",
