@@ -12,7 +12,7 @@ from services.api.infra.config.settings import get_settings
 _settings = get_settings()
 
 _engine: Engine = create_engine(
-    _settings.postgres_dsn,
+    str(_settings.postgres_dsn),
     echo=_settings.db_echo,
     pool_size=_settings.db_pool_size,
     max_overflow=_settings.db_max_overflow,

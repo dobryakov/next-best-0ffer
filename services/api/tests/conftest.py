@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import os
+import sys
 from collections.abc import Generator
+from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 import pytest
@@ -10,12 +13,71 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+_TESTS_DIR = Path(__file__).resolve().parent
+_PROJECT_DIR = _TESTS_DIR.parent
+
+if "services" not in sys.modules:
+    sys.modules["services"] = ModuleType("services")
+
+if "services.api" not in sys.modules:
+    services_pkg = sys.modules["services"]
+    api_pkg = ModuleType("services.api")
+    api_pkg.__path__ = [str(_PROJECT_DIR)]
+    sys.modules["services.api"] = api_pkg
+    setattr(services_pkg, "api", api_pkg)
+
+workers_pkg = sys.modules.setdefault("services.workers", ModuleType("services.workers"))
+tasks_pkg = sys.modules.setdefault("services.workers.tasks", ModuleType("services.workers.tasks"))
+
+celery_app_module = ModuleType("services.workers.tasks.celery_app")
+
+
+class _DummyCeleryControl:
+    def ping(self, timeout: int | None = None) -> list[dict[str, str]]:
+        return [{"worker": "pong"}]
+
+
+class _DummyCelery:
+    control = _DummyCeleryControl()
+
+
+celery_app_module.celery_app = _DummyCelery()
+tasks_pkg.celery_app = celery_app_module
+sys.modules["services.workers.tasks.celery_app"] = celery_app_module
+
+config_module = ModuleType("services.workers.tasks.config")
+config_module.HEALTHCHECK_TIMEOUT = 1
+sys.modules["services.workers.tasks.config"] = config_module
+tasks_pkg.config = config_module
+
+setattr(workers_pkg, "tasks", tasks_pkg)
+services_pkg = sys.modules["services"]
+setattr(services_pkg, "workers", workers_pkg)
+
 # Глобальные переменные окружения для корректной инициализации настроек FastAPI-приложения
-os.environ.setdefault("POSTGRES_DSN", "postgresql+psycopg://nbo:nbo@postgres:5432/nbo")
+os.environ["POSTGRES_DSN"] = "postgresql+psycopg://nbo:nbo@postgres:5432/nbo"
 os.environ.setdefault("REDIS_URL", "redis://redis:6379/0")
 os.environ.setdefault("ALS_FACTORS", "32")
 os.environ.setdefault("ALS_REG", "0.05")
 os.environ.setdefault("LGBM_MODEL_PATH", "/opt/models/lgbm-test.bin")
+os.environ.setdefault("ENVIRONMENT", "test")
+os.environ.setdefault("LOG_LEVEL", "INFO")
+os.environ.setdefault("API_HOST", "0.0.0.0")
+os.environ.setdefault("API_PORT", "9090")
+os.environ.setdefault("DB_ECHO", "0")
+os.environ.setdefault("DB_POOL_SIZE", "5")
+os.environ.setdefault("DB_MAX_OVERFLOW", "5")
+os.environ.setdefault("DB_POOL_TIMEOUT", "10")
+os.environ.setdefault("CELERY_BROKER_URL", "redis://redis:6379/0")
+os.environ.setdefault("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
+os.environ.setdefault("CELERY_TIMEZONE", "UTC")
+os.environ.setdefault("CELERY_DEFAULT_QUEUE", "nbo_default")
+os.environ.setdefault("FEAST_REPO_PATH", "/opt/feast_repo")
+os.environ.setdefault("MODEL_REGISTRY_PATH", "/opt/models")
+os.environ.setdefault("NBO_RETRY_WINDOW_SECONDS", "30")
+os.environ["AB_VARIANTS"] = '["control","treatmentA"]'
+os.environ.setdefault("TRACING_ENDPOINT", "http://jaeger:4318")
+os.environ.setdefault("METRICS_PORT", "9091")
 
 from services.api.app.main import create_app  # noqa: E402
 from services.api.infra.db import session as db_session  # noqa: E402

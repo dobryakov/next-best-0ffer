@@ -79,7 +79,7 @@ def upgrade() -> None:
 
     op.create_table(
         "customers_audit_logs",
-        sa.Column("id", sa.BigInteger(), primary_key=True, autoincrement=True),
+        sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
         sa.Column("customer_id", postgresql.UUID(as_uuid=False), nullable=False),
         sa.Column("version", sa.Integer(), nullable=False),
         sa.Column("change_type", sa.String(length=32), nullable=False),
