@@ -35,6 +35,34 @@ docker compose up --build api workers ml-pipeline
 - `workers` — Celery workers, выполняющие расчёт NBO и обновление признаков
 - `ml-pipeline` — периодическое обучение ALS и LightGBM (cron/Prefect)
 
+### 3.1 Celery-воркеры
+
+> ⚠️ Контейнер `workers` использует `.env` для подключения к Redis/PostgreSQL и списку Celery-импортов — перед запуском убедитесь, что файл актуален.
+
+- Пересобрать образ воркеров после изменения зависимостей:
+
+  ```bash
+  docker compose build workers
+  ```
+
+- Запустить воркеры в фоне (оставит логи в текущем терминале):
+
+  ```bash
+  docker compose up workers
+  ```
+
+- Запустить воркеры с нужным уровнем логирования и масштабированием:
+
+  ```bash
+  LOG_LEVEL=DEBUG docker compose up -d --scale workers=2 workers
+  ```
+
+- Проверить готовность воркеров:
+
+  ```bash
+  docker compose exec workers celery --app services.workers.tasks.celery_app inspect ping
+  ```
+
 ## 4. Первичная инициализация данных
 
 ```bash

@@ -31,6 +31,32 @@ docker compose run --rm ml-pipeline python -m pipelines.load_sample_catalog
 docker compose run --rm ml-pipeline python -m pipelines.train_models --mode=initial
 ```
 
+### Celery-воркеры
+
+- Пересобрать образ после обновления зависимостей воркеров:
+
+  ```bash
+  docker compose build workers
+  ```
+
+- Запустить Celery-воркеры в foreground-режиме для отладки:
+
+  ```bash
+  docker compose up workers
+  ```
+
+- Масштабировать и запустить воркеры в фоне с повышенным уровнем логирования:
+
+  ```bash
+  LOG_LEVEL=DEBUG docker compose up -d --scale workers=2 workers
+  ```
+
+- Проверить, что воркеры отвечают на ping:
+
+  ```bash
+  docker compose exec workers celery --app services.workers.tasks.celery_app inspect ping
+  ```
+
 ## Тестирование
 
 ```bash

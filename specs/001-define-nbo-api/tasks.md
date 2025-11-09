@@ -11,6 +11,8 @@
 - [X] T002 Описать сервисы `api`, `workers`, `ml-pipeline`, `postgres`, `redis`, `feast` в `docker-compose.yml`
 - [X] T003 [P] Настроить Python-зависимости и скрипты сборки в `services/api/pyproject.toml` и `services/workers/pyproject.toml`
 - [X] T004 [P] Сформировать `.env.example` и обновить переменные из quickstart в `.env.example`
+- [X] T047 [P] Настроить зависимости ML-пайплайна в `services/ml/pyproject.toml` и обеспечить совместимость с API/Workers
+- [X] T048 [P] Создать `services/ml/Dockerfile` и зафиксировать базовый образ, установку зависимостей и entrypoint для контейнера `ml-pipeline`
 
 ---
 
@@ -106,6 +108,8 @@
 - [X] T044 Настроить CI-пайплайн с прогоном pytest, контрактных и нагрузочных smoke-тестов в `.github/workflows/ci.yml`
 - [X] T045 [P] Описать дашборды мониторинга и алерты в `docs/monitoring/nbo-dashboard.md`
 - [X] T046 Актуализировать shell-клиент (cli), php-клиент, и js-клиент (sdk-js) в `clients`
+- [X] T049 [P] Подготовить Dockerfile для контейнера `workers` в `services/workers/Dockerfile` с установкой зависимостей и entrypoint для Celery
+- [X] T050 Обновить документацию (`specs/001-define-nbo-api/quickstart.md`, `README.md`) с инструкциями по сборке и запуску контейнера `workers`
 
 ---
 
