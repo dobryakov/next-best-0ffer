@@ -10,7 +10,17 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 # Добавляем корневую директорию репозитория в sys.path, чтобы alembic мог находить пакеты проекта.
-ROOT_DIR = Path(__file__).resolve().parents[5]
+def _discover_project_root() -> Path:
+    path = Path(__file__).resolve()
+    for candidate in [path.parent] + list(path.parents):
+        if (candidate / "pyproject.toml").exists():
+            return candidate
+        if (candidate / ".git").exists():
+            return candidate
+    return path.parent
+
+
+ROOT_DIR = _discover_project_root()
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
@@ -49,7 +59,7 @@ def get_target_metadata():
 def run_migrations_offline() -> None:
     settings = get_settings()
     context.configure(
-        url=settings.postgres_dsn,
+        url=str(settings.postgres_dsn),
         target_metadata=get_target_metadata(),
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -63,7 +73,7 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     settings = get_settings()
-    config.set_main_option("sqlalchemy.url", settings.postgres_dsn)
+    config.set_main_option("sqlalchemy.url", str(settings.postgres_dsn))
 
     connectable = engine_from_config(
         config.get_section(config.config_ini_section) or {},

@@ -33,10 +33,10 @@ def upgrade() -> None:
         sa.Column("idempotency_token", sa.String(length=64), nullable=False, unique=True),
         sa.Column(
             "category",
-            sa.Enum("view", "search", "add_to_cart", "purchase", name="event_category"),
+            event_category_enum,
             nullable=False,
         ),
-        sa.Column("customer_id", sa.String(length=36), nullable=False),
+        sa.Column("customer_id", postgresql.UUID(as_uuid=False), nullable=False),
         sa.Column(
             "product_ids",
             sa.JSON,

@@ -38,7 +38,7 @@ def upgrade() -> None:
         sa.Column("attributes", sa.JSON, nullable=False, server_default=sa.text("'{}'::json")),
         sa.Column(
             "state",
-            sa.Enum("new", "active", "suppressed", name="customer_state"),
+            customer_state_enum,
             nullable=False,
             server_default="active",
         ),
