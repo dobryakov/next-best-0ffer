@@ -4,6 +4,7 @@ from fastapi import Depends, FastAPI
 from fastapi.responses import JSONResponse
 
 from services.api.app.middleware.observability import ObservabilityMiddleware, configure_structlog
+from services.api.app.routes import customers as customers_routes
 from services.api.app.routes import health as health_routes
 from services.api.infra.config.settings import Settings, get_settings
 
@@ -24,6 +25,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(ObservabilityMiddleware, service_name=SERVICE_NAME)
     app.include_router(health_routes.router)
+    app.include_router(customers_routes.router)
 
     @app.get("/_/settings", tags=["internal"], include_in_schema=False)
     def read_settings(current: Settings = Depends(get_settings)) -> dict[str, str | int]:

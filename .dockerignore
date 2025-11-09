@@ -10,6 +10,10 @@ node_modules/
 .pytest_cache/
 coverage/
 *.log*
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
 .env
 .env.*
 Dockerfile*

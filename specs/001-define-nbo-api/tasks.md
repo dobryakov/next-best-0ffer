@@ -36,19 +36,19 @@
 
 ### Tests for User Story 1
 
-- [ ] T013 [P] [US1] Добавить контрактный тест POST/PUT `/customers` в `tests/contract/test_customers_contract.py`
-- [ ] T014 [P] [US1] Реализовать интеграционный сценарий создания и обновления покупателя в `tests/integration/test_customer_crud.py`
+- [X] T013 [P] [US1] Добавить контрактный тест POST/PUT `/customers` в `tests/contract/test_customers_contract.py`
+- [X] T014 [P] [US1] Реализовать интеграционный сценарий создания и обновления покупателя в `tests/integration/test_customer_crud.py`
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Создать миграцию таблицы `customers` с индексами и аудитом версий в `services/api/infra/db/migrations/versions/create_customers_table.py`
-- [ ] T016 [P] [US1] Определить SQLAlchemy-модель `Customer` и enum состояний в `services/api/infra/db/models/customer.py`
-- [ ] T017 [P] [US1] Реализовать репозиторий работы с покупателями и идемпотентность записей в `services/api/domain/customers/repository.py`
-- [ ] T018 [P] [US1] Создать сервис бизнес-логики обновления сегментов и аудит-логов в `services/api/domain/customers/service.py`
-- [ ] T019 [US1] Описать схемы запросов/ответов и валидацию атрибутов в `services/api/app/schemas/customer.py`
-- [ ] T020 [US1] Реализовать маршруты POST `/customers` и PUT `/customer/{id}` с логированием trace id в `services/api/app/routes/customers.py`
-- [ ] T021 [US1] Настроить протокол аудита версий и публикацию событий обновления в `services/api/domain/customers/audit.py`
-- [ ] T022 [US1] Обновить CLI-пример отправки запросов покупателей в `clients/cli/customers.sh`
+- [X] T015 [P] [US1] Создать миграцию таблицы `customers` с индексами и аудитом версий в `services/api/infra/db/migrations/versions/create_customers_table.py`
+- [X] T016 [P] [US1] Определить SQLAlchemy-модель `Customer` и enum состояний в `services/api/infra/db/models/customer.py`
+- [X] T017 [P] [US1] Реализовать репозиторий работы с покупателями и идемпотентность записей в `services/api/domain/customers/repository.py`
+- [X] T018 [P] [US1] Создать сервис бизнес-логики обновления сегментов и аудит-логов в `services/api/domain/customers/service.py`
+- [X] T019 [US1] Описать схемы запросов/ответов и валидацию атрибутов в `services/api/app/schemas/customer.py`
+- [X] T020 [US1] Реализовать маршруты POST `/customers` и PUT `/customer/{id}` с логированием trace id в `services/api/app/routes/customers.py`
+- [X] T021 [US1] Настроить протокол аудита версий и публикацию событий обновления в `services/api/domain/customers/audit.py`
+- [X] T022 [US1] Обновить CLI-пример отправки запросов покупателей в `clients/cli/customers.sh`
 
 ---
 

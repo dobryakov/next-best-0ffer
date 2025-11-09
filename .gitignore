@@ -23,6 +23,10 @@ pnpm-debug.log*
 *.log
 *.tmp
 *.swp
+coverage/
+.coverage
+Thumbs.db
+.DS_Store
 
 # IDE and tooling
 .idea/
