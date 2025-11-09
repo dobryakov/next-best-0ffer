@@ -34,6 +34,7 @@ docker compose run --rm api python -m scripts.bootstrap_db
 docker compose run --rm ml-pipeline python -m pipelines.load_sample_catalog
 docker compose run --rm ml-pipeline python -m pipelines.train_models --mode=initial
 ```
+- _(Временное примечание до закрытия задач T051/T052: если автоматический шедулер ещё не внедрён, внесите команды пересчёта моделей в cron/systemd timer вручную и удалите этот пункт после появления шедулера.)_
 
 ### Celery-воркеры
 

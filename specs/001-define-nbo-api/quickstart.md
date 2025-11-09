@@ -136,6 +136,7 @@ docker compose --profile perf run --rm \
 - ALS (implicit) пересчитывается ежечасно: `docker compose run --rm ml-pipeline python -m pipelines.train_als --mode=batch`
 - LightGBM обновляется ежедневно: `docker compose run --rm ml-pipeline python -m pipelines.train_ranker`
 - Метрики качества пишутся в PostgreSQL и публикуются через `/metrics/ml`.
+- _(Временное примечание до реализации задач T051/T052: настройте выполнение этих команд вручную через cron/systemd timer. После появления автоматического шедулера удалите этот блок из quickstart.)_
 
 ## 8. Наблюдаемость
 
