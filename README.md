@@ -20,9 +20,9 @@
 ## Быстрый старт
 
 Подробный гайд и примеры находятся в `specs/001-define-nbo-api/quickstart.md`. Краткий чек-лист:
+- Подготовьте файл `.env`, используя инструкции из `docs/configuration/env.md` (`@env.md`).
 
 ```bash
-cp .env.example .env
 docker compose build api workers ml-pipeline
 docker compose up --build api workers ml-pipeline
 ```
@@ -93,7 +93,7 @@ docker compose --profile perf run --rm perf \
 - JS SDK-пример: `clients/sdk-js`
 
 Перед использованием внимательно изучите `docs/configuration/env.md`
-с описанием переменных окружения и требований к инфраструктуре.
+(`@env.md`) с описанием переменных окружения, значений для `.env` и требований к инфраструктуре.
 
 ## CI/CD
 
