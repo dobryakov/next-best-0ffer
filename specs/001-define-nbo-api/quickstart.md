@@ -17,7 +17,55 @@ cp .env.example .env
 Расшифровки и рекомендации по настройке см. в `docs/configuration/env.md`.
 При добавлении новых переменных синхронизируйте `.env.example`, README и документацию.
 
-## 3. Запуск сервисов
+## 3. Развёртывание на чистой машине
+
+1. Клонируйте репозиторий и перейдите в каталог проекта:
+
+   ```bash
+   git clone <git-url> next-best-0ffer
+   cd next-best-0ffer
+   ```
+
+2. Скопируйте и заполните `.env` (минимально нужны `POSTGRES_DSN`, `REDIS_URL`, `API_PORT`, `CELERY_*`, см. `docs/configuration/env.md`):
+
+   ```bash
+   cp .env.example .env
+   nano .env
+   ```
+
+3. Соберите или обновите образы приложений (на чистой машине обязательно выполнить перед первым запуском):
+
+   ```bash
+   docker compose pull postgres redis feast
+   docker compose build api workers ml-pipeline
+   ```
+
+4. Запустите инфраструктурные контейнеры и дождитесь health-check’ов:
+
+   ```bash
+   docker compose up -d postgres redis feast
+   docker compose ps
+   ```
+
+5. Примените миграции базы данных из контейнера `api` (переменные берутся из `.env`):
+
+   ```bash
+   docker compose run --rm api alembic upgrade head
+   ```
+
+   > Alembic использует `infra/db/migrations` и `POSTGRES_DSN`/`REDIS_URL` из `.env`; без этого шага таблицы не будут созданы.
+
+6. После успешного `alembic upgrade head` поднимите приложения:
+
+   ```bash
+   docker compose up -d api workers ml-pipeline
+   ```
+
+   Логи можно смотреть командой `docker compose logs -f api workers ml-pipeline`.
+
+7. (Опционально) Заполните демонстрационные данные и обучите базовые модели — см. раздел 4.
+
+## 4. Запуск сервисов
 
 Перед запуском пересоберите образы после изменения зависимостей:
 
@@ -35,7 +83,7 @@ docker compose up --build api workers ml-pipeline
 - `workers` — Celery workers, выполняющие расчёт NBO и обновление признаков
 - `ml-pipeline` — периодическое обучение ALS и LightGBM (cron/Prefect)
 
-### 3.1 Celery-воркеры
+### 4.1 Celery-воркеры
 
 > ⚠️ Контейнер `workers` использует `.env` для подключения к Redis/PostgreSQL и списку Celery-импортов — перед запуском убедитесь, что файл актуален.
 
@@ -63,15 +111,14 @@ docker compose up --build api workers ml-pipeline
   docker compose exec workers celery --app services.workers.tasks.celery_app inspect ping
   ```
 
-## 4. Первичная инициализация данных
+## 5. Первичная инициализация данных
 
 ```bash
-docker compose run --rm api python -m scripts.bootstrap_db
 docker compose run --rm ml-pipeline python -m pipelines.load_sample_catalog
 docker compose run --rm ml-pipeline python -m pipelines.train_models --mode=initial
 ```
 
-## 5. Проверка работоспособности
+## 6. Проверка работоспособности
 
 ```bash
 # health-check
@@ -101,7 +148,7 @@ curl -s -X POST http://localhost:9090/events \
 curl -s http://localhost:9090/nbo/11111111-1111-1111-1111-111111111111 | jq
 ```
 
-## 6. Тесты
+## 7. Тесты
 
 > ⚠️ Перед запуском любых `docker compose run ...` обязательно пересобирайте образ соответствующего сервиса:  
 > `docker compose build <service>` (например, `docker compose build api`).  
@@ -131,25 +178,25 @@ docker compose --profile perf run --rm \
 
 ℹ️ Dockerfile сервиса `api` копирует весь каталог `services/api` в `/app` внутри контейнера, поэтому тестовые директории (`tests`, `services/api/tests`) доступны без дополнительных volume-маппингов и вызов `docker compose run --rm api pytest` работает из коробки.
 
-## 7. ML-пайплайн
+## 8. ML-пайплайн
 
 - ALS (implicit) пересчитывается ежечасно: `docker compose run --rm ml-pipeline python -m pipelines.train_als --mode=batch`
 - LightGBM обновляется ежедневно: `docker compose run --rm ml-pipeline python -m pipelines.train_ranker`
 - Метрики качества пишутся в PostgreSQL и публикуются через `/metrics/ml`.
 - _(Временное примечание до реализации задач T051/T052: настройте выполнение этих команд вручную через cron/systemd timer. После появления автоматического шедулера удалите этот блок из quickstart.)_
 
-## 8. Наблюдаемость
+## 9. Наблюдаемость
 
 - Логи доступны через `docker compose logs -f api workers`
 - Метрики Prometheus на `http://localhost:${METRICS_PORT:-9091}/metrics`
 - Трассировки отправляются в Jaeger (`TRACING_ENDPOINT`, см. `.env`)
 
-## 9. A/B тестирование
+## 10. A/B тестирование
 
 - Перед запросом рекомендаций передавайте `variant` (`control`, `treatmentA`)
 - Результаты эксперимента сохраняются в таблице `experiments_results` и доступны через BI.
 
-## 10. Клиенты и примеры
+## 11. Клиенты и примеры
 
 - Shell-скрипты: `clients/cli/*.sh`
 - Пример PHP SDK: `clients/php`

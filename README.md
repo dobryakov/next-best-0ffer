@@ -2,7 +2,7 @@
 
 Представьте себе продукт, который знает вашего клиента лучше, чем он сам: именно так работает наша Next Best Offer Platform. Она соединяет богатую поведенческую аналитику, real-time обработку событий и продвинутые ML-модели (ALS, LightGBM, feature store на Feast), чтобы выдавать персональные рекомендации с первой секунды. Система построена на стекe FastAPI, Celery, PostgreSQL, Redis и оркестрируется через Docker Compose — всё для масштабирования без боли и остановок. Бизнес получает прозрачную воронку рекомендаций, измеримые uplift-показатели и гибкую настройку стратегий удержания, а маркетинг — готовые сценарии, которые можно A/B-тестировать, запускать в performance-каналах и интегрировать в CRM. Добавьте к этому наблюдаемость, auto-healing health-checks и автоматизированные пайплайны обучения — и вы получите платформу, которая превращает данные в деньги.
 
-# Next Best Offer Platform
+## Next Best Offer Platform
 
 Контейнеризированный сервис рекомендаций с REST API, асинхронными воркерами
 и ML-пайплайнами для расчёта Next Best Offer.
@@ -20,20 +20,28 @@
 ## Быстрый старт
 
 Подробный гайд и примеры находятся в `specs/001-define-nbo-api/quickstart.md`. Краткий чек-лист:
-- Подготовьте файл `.env`, используя инструкции из `docs/configuration/env.md` (`@env.md`).
+
+- Скопируйте `.env` из шаблона и заполните обязательные переменные (`POSTGRES_DSN`, `REDIS_URL`, см. `docs/configuration/env.md`).
+- Соберите/обновите образы приложений, подтяните инфраструктурные образы.
+- Поднимите `postgres`, `redis`, `feast`, дождитесь health-check’ов.
+- Примените миграции `alembic upgrade head` внутри контейнера `api`.
+- Запустите `api`, `workers`, `ml-pipeline`.
 
 ```bash
+docker compose pull postgres redis feast
 docker compose build api workers ml-pipeline
-docker compose up --build api workers ml-pipeline
+docker compose up -d postgres redis feast
+docker compose run --rm api alembic upgrade head
+docker compose up -d api workers ml-pipeline
 ```
 
-Инициализация данных и обучение моделей:
+Инициализация демонстрационных данных и обучение стартовых моделей:
 
 ```bash
-docker compose run --rm api python -m scripts.bootstrap_db
 docker compose run --rm ml-pipeline python -m pipelines.load_sample_catalog
 docker compose run --rm ml-pipeline python -m pipelines.train_models --mode=initial
 ```
+
 - _(Временное примечание до закрытия задач T051/T052: если автоматический шедулер ещё не внедрён, внесите команды пересчёта моделей в cron/systemd timer вручную и удалите этот пункт после появления шедулера.)_
 
 ### Celery-воркеры
@@ -105,4 +113,3 @@ Workflow `.github/workflows/ci.yml` выполняет:
 - smoke-нагрузку через Locust (headless профиль `perf`).
 
 Добавляйте новые проверки по мере расширения функциональности.
-
